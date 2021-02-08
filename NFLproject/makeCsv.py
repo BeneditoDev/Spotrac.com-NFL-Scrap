@@ -2,9 +2,9 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import MySQLdb
 import csv
-from getInfo import getPlayerInfo
 
 def makeCsv(url):
+    
     html = urlopen(url)
     bsObj = BeautifulSoup(html,"html.parser")
 
@@ -18,3 +18,9 @@ def makeCsv(url):
 
         if 'href' in anchor.attrs:
             names_links[anchor.get_text()] = anchor.attrs['href'] 
+            
+    with open('dict.csv','w') as f:
+        w = csv.writer(f)
+        for key, value in names_links.items():
+            w.writerow([key, value])
+#makeCsv("https://www.spotrac.com/nfl/contracts/sort-value/limit-2000/")
