@@ -5,47 +5,44 @@ from bs4 import BeautifulSoup
 import MySQLdb
 import csv
 #Import funcion to get player salary data
-from getInfo import getPlayerInfo
+from getInfo import getInfoNFL
 from makeHash import makeHash, veriHash
+
 
 #Connecting to a DB in local host to store data.
 db = MySQLdb.connect(host="localhost", user="python", passwd="admin", db="yourDB")
 cursor = db.cursor()
 
-try:
-    f = open("final.txt", "r")
-    start = f.read()
-    if start == "":
-        start = "0"
-except:
-    f = open("final.txt", "w")
-    f.write("0")
-    f = open("final.txt", "r")
-    start = f.read()
 
-#Creating tables, you can create them before running the code if you not will create the Db in one shot
-if int(start) == 0:
+if cursor.execute("SHOW TABLES") == 0:
     cursor.execute("CREATE TABLE players(cont int NOT NULL AUTO_INCREMENT, id varchar(10), firstN varchar(255), lastN varchar(255), team varchar(255), posi varchar(255), PRIMARY KEY (cont)) ENGINE=INNODB;")
-    cursor.execute("CREATE TABLE salaries(cont int NOT NULL AUTO_INCREMENT, id varchar(255), capType varchar(255), a2020 varchar(255), a2021 varchar(255), a2022 varchar(255), a2023 varchar(255), a2024 varchar(255), a2025 varchar(255), a2026 varchar(255), a2027 varchar(255), a2028 varchar(255), a2029 varchar(255), a2030 varchar(255), a2031 varchar(255), PRIMARY KEY (cont)) ENGINE=INNODB;")
-    control = 0
-    loop = 0
+    cursor.execute("CREATE TABLE salaries(id varchar(255), capType varchar(255), a2020 varchar(255), a2021 varchar(255), a2022 varchar(255), a2023 varchar(255), a2024 varchar(255), a2025 varchar(255), a2026 varchar(255), a2027 varchar(255), a2028 varchar(255), a2029 varchar(255), a2030 varchar(255), a2031 varchar(255)) ENGINE=INNODB;")
+    start = 0
 else:
-    pass
+    if cursor.execute("SELECT * FROM players;") == 0:
+        start = 0
+        pass
+    else:
+        start = int(cursor.execute("SELECT * FROM players;")) + 1
+
+
 hashDb = {}
 #Reading CSV created by "makeCsv.py" to get players links.
 with open('dict.csv','r') as file:
     reader = csv.reader(file)
     line_count = 0
     loop = 0
-    for row in reader:   
+    for row in reader:
+#Controling the parts of the links the program will actually work, to make a step-by-step process
         if line_count < int(start) -1:
             line_count = line_count + 1
             pass
         else:
             url = row[1]
+            #Get data
+            capHit, deadCap, team, posi = getInfoNFL(url)
 
-            capHit, deadCap, team, posi = getPlayerInfo(url)
-            #Separating the First and second name.
+            #Separating the First and second name
             name = row[0].split()
                 
             hashKey = makeHash(name[0], name[1], hashDb)
@@ -64,6 +61,8 @@ with open('dict.csv','r') as file:
             cursor.execute("INSERT INTO salaries(id, capType) VALUES('{0}','CapHit');".format(hashKey))
             cursor.execute("INSERT INTO salaries(id, capType) VALUES('{0}','DeadCap');".format(hashKey))
             table_count = table_count + 1
+
+            #Loops in the dicts get by getPlayerInfo() to transfers the data for Mysql Db
             for key, value in capHit.items():
                 val = str(value)
                 #Parsing the problematic characters;
@@ -75,7 +74,7 @@ with open('dict.csv','r') as file:
                     cursor.execute("UPDATE salaries SET {0} = '{1}' WHERE id = '{2}' AND capType = 'CapHit';".format(year, val, hashKey))            
 
             for key2, value2 in deadCap.items():
-                #Because a bug in the scrap of deadCap info, sometimes the function gets two deadCaps for one year (one of them is "0")
+                #Handling error in the deadCap info
                 if len(value2) > 1:
                     val2 = str(value2[0])
                 else:
@@ -86,14 +85,16 @@ with open('dict.csv','r') as file:
                     pass
                 else:
                     year2 = "a" + key2
+                    if val2 == '':
+                        val2 = "NULL"
                     cursor.execute("UPDATE salaries SET {0} = '{1}' WHERE capType = 'DeadCap'  AND id = '{2}';".format(year2, val2, hashKey))            
-                        
+            
             loop = loop +1
             line_count = line_count +   1
             print(line_count)
-            if loop == 20:
+            #Define the number of rows you want the program to execute in one shot (put the max number of row in csv if you want)
+            if loop == 100:
                 break
-fw = open("final.txt", "w")
-fw.write(str(line_count + 1))
+#Saving the part of csv the last program execute
 db.commit()
 db.close()                                                                                
