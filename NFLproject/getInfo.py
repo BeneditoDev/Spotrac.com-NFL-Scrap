@@ -6,10 +6,10 @@ import csv
 
 
 
-def getPlayerInfo(url):
+def getInfoNFL(url):
     html2 = urlopen(url)
     bsObj = BeautifulSoup(html2,"html.parser")
-    #Get the position, the team  and the exp of teh player
+    #Get the position, the team  and the exp of the player
     divMain = bsObj.find("div",{"id":"main"})
     divInfo = divMain.find("div",{"class":"player-info"})
     span = divInfo.find("span",{"class":"player-item position"})
@@ -19,10 +19,10 @@ def getPlayerInfo(url):
     #exp = span2.get_text()
     team_posi = rawTeamPosi.split(",")
 
- 
+    #Get the contracts info
     divFather = bsObj.find("div",{"class":"teams"})
-
     divSon = divFather.find("div",{"id":"current_contract"})
+
     body = divSon.table.find("tbody")
     trs = body.find_all("tr", class_="salaryRow")
     trCount = 0
@@ -30,9 +30,10 @@ def getPlayerInfo(url):
     capHit = {}
     deadCap = {}
     for tr in range(len(trs)):
-
+        #Loop through all Tds and reading only the tds with more than 5 sons (the only tds with the data info we want)
         tds = trs[tr].findAll("td")
         for td in range(len(tds)):
+            #Locating the data we want by the href and class 
             if len(tds) > 5:
                 #Year
                 if 'href="http' in str(tds[td]):
@@ -56,5 +57,3 @@ def getPlayerInfo(url):
 
     return capHit, deadCap, team_posi[0], team_posi[1]
 
-url = "https://www.spotrac.com/nfl/baltimore-ravens/marlon-humphrey-21757/"
-getPlayerInfo(url)
