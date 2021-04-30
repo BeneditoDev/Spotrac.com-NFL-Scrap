@@ -19,8 +19,7 @@ def makeCsv(url):
         if 'href' in anchor.attrs:
             names_links[anchor.get_text()] = anchor.attrs['href'] 
             
-    with open('dictNBA.csv','w') as f:
+    with open('dictNFL.csv','w') as f:
         w = csv.writer(f)
         for key, value in names_links.items():
             w.writerow([key, value])
-makeCsv("https://www.spotrac.com/nba/contracts/sort-value/limit-2000/")
