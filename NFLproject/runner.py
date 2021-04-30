@@ -10,9 +10,9 @@ import csv
 
 def printMenu():
     print("")
-    print("================================================================================================")
-    print("    To work correctly you need to create a database with a valid user before run option 2       ")
-    print("================================================================================================")
+    print("=====================================================================================================================")
+    print("      To work correctly you need to create a MySQL database in the machine with a valid user before run option 2     ")
+    print("=====================================================================================================================")
     print("")
     print("[1] | Make Csv.")
     print("[2] | Make a new base or continue an existing one.")
