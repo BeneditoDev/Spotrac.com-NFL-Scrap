@@ -5,10 +5,13 @@ import csv
 
 
 
+url = "https://www.spotrac.com/nfl/kansas-city-chiefs/patrick-mahomes-21751/"
+
 
 def getInfoNFL(url):
     html2 = urlopen(url)
-    bsObj = BeautifulSoup(html2,"html.parser")
+    bsObj = BeautifulSoup(html2,"lxml")
+
     #Get the position, the team  and the exp of the player
     divMain = bsObj.find("div",{"id":"main"})
     divInfo = divMain.find("div",{"class":"player-info"})
@@ -20,19 +23,26 @@ def getInfoNFL(url):
     team_posi = rawTeamPosi.split(",")
 
     #Get the contracts info
-    divFather = bsObj.find("div",{"class":"teams"})
-    divSon = divFather.find("div",{"id":"current_contract"})
+    #divFather = bsObj.find("div",class_="teams")
 
-    body = divSon.table.find("tbody")
-    trs = body.find_all("tr", class_="salaryRow")
+    divSon = bsObj.find("div",{"class":"teams"})
+
+    body = divSon.find("li",{"id":"contracts"})
+    
+    trs = body.find_all("tr")
+
     trCount = 0
 
     capHit = {}
     deadCap = {}
+    #Para baixo esta tudo certo
+
     for tr in range(len(trs)):
         #Loop through all Tds and reading only the tds with more than 5 sons (the only tds with the data info we want)
         tds = trs[tr].findAll("td")
+
         for td in range(len(tds)):
+
             #Locating the data we want by the href and class 
             if len(tds) > 5:
                 #Year
@@ -47,7 +57,6 @@ def getInfoNFL(url):
                     capHit[key].append(si.strip())
                 #DeadCap
                 if 'href="#"' in str(tds[td]):
-
                     if tds[td].get_text() == '':
                         deadCap[key].append(0)
                     else:
@@ -56,4 +65,5 @@ def getInfoNFL(url):
         trCount = trCount + 1
 
     return capHit, deadCap, team_posi[0], team_posi[1]
+
 
