@@ -28,7 +28,7 @@ def op1():
 
 def op2():
     print("Configure a valid connection to an existing database")
-    mydb = input("Choose the database to be used (The function wil handle if is a new database or no): ")
+    mydb = input("Choose the database to be used (The function will handle whether it is a new database or not): ")
     myhost = input("Mysql host: ")
     myuser = input("Mysql user: ")
     mypass = input("Mysql password: ")
