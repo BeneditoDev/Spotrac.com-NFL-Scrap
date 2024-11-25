@@ -5,8 +5,6 @@ import csv
 
 
 
-url = "https://www.spotrac.com/nfl/kansas-city-chiefs/patrick-mahomes-21751/"
-
 
 def getInfoNFL(url):
     html2 = urlopen(url)
